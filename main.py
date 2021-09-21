@@ -27,12 +27,12 @@ def frame():
     newWindow.geometry('%dx%d+%d+%d' % (w/2, h/2, x+x/2, y+y/2)) #dimension and position
 
     #layout
-    frameLeft=tk.Frame(newWindow, bg="red")
-    frameLeftPatternW=tk.Frame(frameLeft, bg="blue")
-    frameLeftPatternH=tk.Frame(frameLeft, bg="white")
-    frameLeftBottomError=tk.Frame(frameLeft, bg="black")
-    frameLeftBottomButton=tk.Frame(frameLeft, bg="black")
-    frameRight=tk.Frame(newWindow, bg="yellow")
+    frameLeft=tk.Frame(newWindow)
+    frameLeftPatternW=tk.Frame(frameLeft)
+    frameLeftPatternH=tk.Frame(frameLeft)
+    frameLeftBottomError=tk.Frame(frameLeft)
+    frameLeftBottomButton=tk.Frame(frameLeft)
+    frameRight=tk.Frame(newWindow)
 
     #layout centering
     frameLeft.pack(side=LEFT, expand=True, fill="both")
@@ -49,7 +49,12 @@ def frame():
     lbl_err = tk.Label(frameLeftBottomError, text="Warning: only numerical value will be saved")
     
         
-        
+    def callback(sv):
+        print(sv.get())
+        if (not str(sv.get()).isdigit()):
+            lbl_err.pack(expand=TRUE)
+        else:
+            lbl_err.pack_forget()    
 
     sv1 = tk.StringVar()
     sv1.trace("w", lambda name, index, mode, sv=sv1: callback(sv))
@@ -62,17 +67,12 @@ def frame():
     
     e1.pack(side=RIGHT)
     e2.pack(side=RIGHT)
-    save_button = tk.Button(frameLeftBottomButton, text="SAVE", command=lambda: save_changes())
-    reset_button = tk.Button(frameLeftBottomButton, text="RESET", command=lambda: reset_changes())
-    save_button.pack(side=LEFT) 
-    reset_button.pack(side=RIGHT) 
+    save_button = tk.Button(frameLeftBottomButton, text="SAVE", command=lambda: save_changes(), padx=20)
+    reset_button = tk.Button(frameLeftBottomButton, text="RESET", command=lambda: reset_changes(), padx=20)
+    save_button.pack(side=LEFT, padx=20) 
+    reset_button.pack(side=RIGHT, padx=20) 
 
-    def callback(sv):
-        print(sv.get())
-        if (not str(sv.get()).isdigit()):
-            lbl_err.pack(expand=TRUE)
-        else:
-            lbl_err.pack_forget()    
+   
     def save_changes():
         pass
     def  reset_changes():
