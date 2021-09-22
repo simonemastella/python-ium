@@ -18,6 +18,9 @@ window.geometry('%dx%d+%d+%d' % (w, h, x, y))
 # environment var
 my_pattern_w = 5
 my_pattern_h = 3
+canvas_w =40
+canvas_h =40
+
 
 # define the setting frame
 def frame():
@@ -116,12 +119,8 @@ def frame():
 windowLeft = tk.Frame(window)
 windowRight = tk.Frame(window, bg="red")
 
-vscrollbar = tk.Scrollbar(window, orient=tk.VERTICAL)
-vscrollbar.pack(fill=Y, side=RIGHT)
-
 windowLeft.pack(side=LEFT, expand=True, fill="both")
 windowRight.pack(side=LEFT, expand=True, fill="both")
-
 
 windowLeftMid = tk.Frame(windowLeft)
 windowLeftMid.place(in_=windowLeft, anchor="c", relx=.5, rely=.5)
