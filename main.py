@@ -1,3 +1,4 @@
+from time import sleep
 import tkinter as tk
 from tkinter import messagebox
 from tkinter.constants import BOTTOM, CENTER, END, LEFT, RIGHT, TOP, TRUE, Y
@@ -18,8 +19,8 @@ window.geometry('%dx%d+%d+%d' % (w, h, x, y))
 # environment var
 my_pattern_w = 5
 my_pattern_h = 3
-canvas_w =40
-canvas_h =40
+canvas_w = 40
+canvas_h = 40
 
 
 # define the setting frame
@@ -30,19 +31,26 @@ def frame():
     # dimension and position
     newWindow.geometry('%dx%d+%d+%d' % (w/2, h/2, x+x/2, y+y/2))
     # layout
+    
+    frameLeftCanvasW = tk.Frame(newWindow)
+    frameLeftCanvasH = tk.Frame(newWindow)
     frameLeftPatternW = tk.Frame(newWindow)
     frameLeftPatternH = tk.Frame(newWindow)
     frameLeftBottomError = tk.Frame(newWindow)
     frameLeftBottomButton = tk.Frame(newWindow)
     # layout left side
-    frameLeftPatternW.place(in_=newWindow, anchor="c", relx=.5, rely=.4)
-    frameLeftPatternH.place(in_=newWindow, anchor="c", relx=.5, rely=.5)
-    frameLeftBottomError.place(in_=newWindow, anchor="c", relx=.5, rely=.6)
-    frameLeftBottomButton.place(in_=newWindow, anchor="c", relx=.5, rely=.7)
+    frameLeftCanvasW.place(in_=newWindow, anchor="c", relx=.5, rely=.2)
+    frameLeftCanvasH.place(in_=newWindow, anchor="c", relx=.5, rely=.3)
+    frameLeftPatternW.place(in_=newWindow, anchor="c", relx=.5, rely=.5)
+    frameLeftPatternH.place(in_=newWindow, anchor="c", relx=.5, rely=.6)
+    frameLeftBottomError.place(in_=newWindow, anchor="c", relx=.5, rely=.8)
+    frameLeftBottomButton.place(in_=newWindow, anchor="c", relx=.5, rely=.9)
     # 2 labels left
+    tk.Label(frameLeftCanvasW, text="My canvas w").pack(side=LEFT)
+    tk.Label(frameLeftCanvasH, text="My canvas h").pack(side=LEFT)
     tk.Label(frameLeftPatternW, text="My pattern w").pack(side=LEFT)
     tk.Label(frameLeftPatternH, text="My pattern h").pack(side=LEFT)
-    # error left
+    # error
     lbl_err = tk.Label(frameLeftBottomError,
                        text="Warning: only numerical value will be saved")
     # live changing textbox for error warning
@@ -52,37 +60,54 @@ def frame():
             lbl_err.pack(expand=TRUE)
         else:
             lbl_err.pack_forget()
-    # 2 entry in left
+    # 4 entry
     sv1 = tk.StringVar()
     sv1.trace("w", lambda name, index, mode, sv=sv1: callback(sv))
-    e1 = tk.Entry(frameLeftPatternW, textvariable=sv1)
-    e1.insert(tk.END, my_pattern_w)
+    e1 = tk.Entry(frameLeftCanvasW, textvariable=sv1)
+    e1.insert(tk.END, canvas_w)
     sv2 = tk.StringVar()
     sv2.trace("w", lambda name, index, mode, sv=sv2: callback(sv))
-    e2 = tk.Entry(frameLeftPatternH, textvariable=sv2)
-    e2.insert(tk.END, my_pattern_h)
+    e2 = tk.Entry(frameLeftCanvasH, textvariable=sv2)
+    e2.insert(tk.END, canvas_h)
+    sv3 = tk.StringVar()
+    sv3.trace("w", lambda name, index, mode, sv=sv3: callback(sv))
+    e3 = tk.Entry(frameLeftPatternW, textvariable=sv3)
+    e3.insert(tk.END, my_pattern_w)
+    sv4 = tk.StringVar()
+    sv4.trace("w", lambda name, index, mode, sv=sv4: callback(sv))
+    e4 = tk.Entry(frameLeftPatternH, textvariable=sv4)
+    e4.insert(tk.END, my_pattern_h)
 
     e1.pack(side=RIGHT)
     e2.pack(side=RIGHT)
+    e3.pack(side=RIGHT)
+    e4.pack(side=RIGHT)
     save_button = tk.Button(
         frameLeftBottomButton, text="SAVE", command=lambda: save_changes(), padx=20)
     reset_button = tk.Button(
         frameLeftBottomButton, text="RESET", command=lambda: reset_changes(), padx=20)
     save_button.pack(side=LEFT, padx=20)
     reset_button.pack(side=RIGHT, padx=20)
-    
+
     # check and function for saving or quitting
     def has_changes():
         global my_pattern_w
         global my_pattern_h
-        pattern_w = (str(my_pattern_w) != str(e1.get()))
-        pattern_h = (str(my_pattern_h) != str(e2.get()))
-        return pattern_w or pattern_h
+        global canvas_w
+        global canvas_h
+        canvas_w = (str(my_pattern_w) != str(e1.get()))
+        canvas_h = (str(my_pattern_h) != str(e2.get()))
+        pattern_w = (str(my_pattern_w) != str(e3.get()))
+        pattern_h = (str(my_pattern_h) != str(e4.get()))
+        return canvas_w or canvas_h or pattern_w or pattern_h
 
     def save_changes():
         if has_changes():
             global my_pattern_w
             global my_pattern_h
+            global canvas_w
+            global canvas_h
+            # canvas save the value if positive, else =1
             if e1.get().isdigit():
                 if int(e1.get()) < 1:
                     my_pattern_w = 1
@@ -93,21 +118,39 @@ def frame():
                     my_pattern_h = 1
                 else:
                     my_pattern_h = int(e2.get())
+            # pattern save the value if positive, else =1
+            if e3.get().isdigit():
+                if int(e3.get()) < 1:
+                    my_pattern_w = 1
+                else:
+                    my_pattern_w = int(e3.get())
+            if e4.get().isdigit():
+                if int(e4.get()) < 1:
+                    my_pattern_h = 1
+                else:
+                    my_pattern_h = int(e4.get())
             reset_changes()
             reload_button_pattern()
 
     def reset_changes():
         if has_changes():
+            #canvas
             global my_pattern_w
             global my_pattern_h
             e1.delete(0, END)
             e1.insert(0, my_pattern_w)
             e2.delete(0, END)
             e2.insert(0, my_pattern_h)
+            #pattern
+            global canvas_w
+            global canvas_h
+            e3.delete(0, END)
+            e3.insert(0, my_pattern_w)
+            e4.delete(0, END)
+            e4.insert(0, my_pattern_h)
 
     def on_closing():
         if has_changes():
-            print(has_changes())
             if messagebox.askokcancel("Quit", "Do you want to keep changes?"):
                 save_changes()
                 newWindow.destroy()
@@ -120,7 +163,7 @@ windowLeft = tk.Frame(window)
 windowRight = tk.Frame(window, bg="red")
 
 windowLeft.pack(side=LEFT, expand=True, fill="both")
-windowRight.pack(side=LEFT, expand=True, fill="both")
+windowRight.pack(side=LEFT)
 
 windowLeftMid = tk.Frame(windowLeft)
 windowLeftMid.place(in_=windowLeft, anchor="c", relx=.5, rely=.5)
@@ -134,7 +177,6 @@ tk.Label(windowLeftMid, textvariable=my_pattern_lbl).pack(side=TOP)
 btn_value = []
 btn = []
 frame_btn = []
-
 
 def make_button_pattern():
     global btn_value
@@ -159,7 +201,6 @@ def make_button_pattern():
                 frame_btn[heigth], height=1, width=1, bg="white", relief="groove", command=lambda x1=width, y1=heigth: color_change(x1, y1))
             btn[heigth][width].pack(side=LEFT)
 
-
 def reload_button_pattern():
     global btn_value
     global btn
@@ -167,8 +208,6 @@ def reload_button_pattern():
     global my_pattern_lbl
     actual_w = (len(btn[0]))
     actual_y = (len(btn))
-    print(actual_w)
-    print(actual_y)
     for heigth in range(actual_y):
         frame_btn[heigth].destroy()
         for width in range(actual_w):
@@ -176,15 +215,36 @@ def reload_button_pattern():
     my_pattern_lbl.set("My pattern {}x{}".format(my_pattern_w, my_pattern_h))
     make_button_pattern()  # redraw
 
-
 make_button_pattern()  # draw first time
 
 computebutton = tk.Button(windowLeftBottom, text="COMPUTE", padx=10)
 computebutton.pack(side=LEFT, padx=10)
-randomize = tk.Button(windowLeftBottom, text="RANDOMIZE", padx=10)
+randomize = tk.Button(windowLeftBottom, text="RANDOMIZE", padx=10,
+                        command=lambda: reload_canvas())
 randomize.pack(side=LEFT, padx=10)
-framebutton = tk.Button(windowLeftBottom, text="SETTINGS", command=lambda: frame(), padx=10)
+framebutton = tk.Button(windowLeftBottom, text="SETTINGS",
+                        command=lambda: frame(), padx=10)
 framebutton.pack(side=LEFT, padx=10)
 
+# frameRight
+canvas = tk.Canvas(windowRight, width=w/2, height=h)
+
+
+def make_canvas():
+    global canvas
+    global canvas_h
+    global canvas_w
+    all_width = w/2
+    all_height = h
+    canvas.create_rectangle(0, 0, all_width, all_height, fill="blue")
+    canvas.pack()
+    pass
+
+def reload_canvas():
+    global canvas
+    canvas.delete("all")
+    make_canvas()
+
+make_canvas()
 if __name__ == "__main__":
     window.mainloop()
