@@ -95,11 +95,11 @@ def frame():
         global my_pattern_h
         global canvas_w
         global canvas_h
-        canvas_w = (str(my_pattern_w) != str(e1.get()))
-        canvas_h = (str(my_pattern_h) != str(e2.get()))
+        ch_canvas_w = (str(canvas_w) != str(e1.get()))
+        ch_canvas_h = (str(canvas_h) != str(e2.get()))
         pattern_w = (str(my_pattern_w) != str(e3.get()))
         pattern_h = (str(my_pattern_h) != str(e4.get()))
-        return canvas_w or canvas_h or pattern_w or pattern_h
+        return ch_canvas_w or ch_canvas_h or pattern_w or pattern_h
 
     def save_changes():
         if has_changes():
@@ -110,14 +110,14 @@ def frame():
             # canvas save the value if positive, else =1
             if e1.get().isdigit():
                 if int(e1.get()) < 1:
-                    my_pattern_w = 1
+                    canvas_w = 1
                 else:
-                    my_pattern_w = int(e1.get())
+                    canvas_w = int(e1.get())
             if e2.get().isdigit():
                 if int(e2.get()) < 1:
-                    my_pattern_h = 1
+                    canvas_h = 1
                 else:
-                    my_pattern_h = int(e2.get())
+                    canvas_h = int(e2.get())
             # pattern save the value if positive, else =1
             if e3.get().isdigit():
                 if int(e3.get()) < 1:
@@ -135,15 +135,16 @@ def frame():
     def reset_changes():
         if has_changes():
             #canvas
-            global my_pattern_w
-            global my_pattern_h
-            e1.delete(0, END)
-            e1.insert(0, my_pattern_w)
-            e2.delete(0, END)
-            e2.insert(0, my_pattern_h)
-            #pattern
+            
             global canvas_w
             global canvas_h
+            e1.delete(0, END)
+            e1.insert(0, canvas_w)
+            e2.delete(0, END)
+            e2.insert(0, canvas_h)
+            #pattern
+            global my_pattern_w
+            global my_pattern_h
             e3.delete(0, END)
             e3.insert(0, my_pattern_w)
             e4.delete(0, END)
