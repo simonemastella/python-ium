@@ -1,15 +1,5 @@
-def print_array(arr):
-    for x in range(len(arr)):
-        for y in range(len(arr[x])):
-            print(arr[x][y], end="\t")
-        print()
-
-
-def get_slice(arr, startW, startY, width, height):
-    result = []
-    for row in range(height):
-        result.append(arr[row+startY][startW:width+startW])
-    return result
+from utils import get_slice
+from utils import print_array
 
 
 def compare_all_slice(arrSmall, arrBig):

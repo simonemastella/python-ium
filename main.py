@@ -1,7 +1,11 @@
-from time import sleep
 import tkinter as tk
 from tkinter import messagebox
 from tkinter.constants import BOTTOM, CENTER, END, LEFT, RIGHT, TOP, TRUE, Y
+from time import sleep
+
+from utils import random_matrix
+from compute import compare_all_slice
+
 
 window = tk.Tk()
 window.configure()
@@ -17,10 +21,10 @@ y = (hs / 2) - (h / 2)
 window.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
 # environment var
-my_pattern_w = 5
-my_pattern_h = 3
-canvas_w = 40
-canvas_h = 40
+my_pattern_w = 3
+my_pattern_h = 2
+canvas_w = 10
+canvas_h = 10
 
 
 # define the setting frame
@@ -31,7 +35,7 @@ def frame():
     # dimension and position
     newWindow.geometry('%dx%d+%d+%d' % (w/2, h/2, x+x/2, y+y/2))
     # layout
-    
+
     frameLeftCanvasW = tk.Frame(newWindow)
     frameLeftCanvasH = tk.Frame(newWindow)
     frameLeftPatternW = tk.Frame(newWindow)
@@ -131,18 +135,18 @@ def frame():
                     my_pattern_h = int(e4.get())
             reset_changes()
             reload_button_pattern()
+            randomize_canvas()
 
     def reset_changes():
         if has_changes():
-            #canvas
-            
+            # canvas
             global canvas_w
             global canvas_h
             e1.delete(0, END)
             e1.insert(0, canvas_w)
             e2.delete(0, END)
             e2.insert(0, canvas_h)
-            #pattern
+            # pattern
             global my_pattern_w
             global my_pattern_h
             e3.delete(0, END)
@@ -160,14 +164,12 @@ def frame():
 
 
 # layout
-windowLeft = tk.Frame(window)
-windowRight = tk.Frame(window, bg="red")
-
+windowLeft, windowRight = tk.Frame(window), tk.Frame(window)
 windowLeft.pack(side=LEFT, expand=True, fill="both")
 windowRight.pack(side=LEFT)
 
 windowLeftMid = tk.Frame(windowLeft)
-windowLeftMid.place(in_=windowLeft, anchor="c", relx=.5, rely=.5)
+windowLeftMid.place(in_=windowLeft, anchor="c", relx=.5, rely=0.5)
 windowLeftBottom = tk.Frame(windowLeft)
 windowLeftBottom.place(in_=windowLeft, anchor="c", relx=.5, rely=0.9)
 my_pattern_lbl = tk.StringVar()
@@ -179,12 +181,13 @@ btn_value = []
 btn = []
 frame_btn = []
 
+
 def make_button_pattern():
     global btn_value
     global btn
     global frame_btn
     btn_value = [[0 for z in range(my_pattern_w)] for z in range(my_pattern_h)]
-    btn = [[0 for z in range(my_pattern_w)] for z in range(my_pattern_h)]
+    btn = [[None for z in range(my_pattern_w)] for z in range(my_pattern_h)]
     frame_btn = [0 for z in range(my_pattern_h)]
 
     def color_change(b, a):
@@ -199,14 +202,12 @@ def make_button_pattern():
         frame_btn[heigth].pack(side=TOP)
         for width in range(my_pattern_w):
             btn[heigth][width] = tk.Button(
-                frame_btn[heigth], height=1, width=1, bg="white", relief="groove", command=lambda x1=width, y1=heigth: color_change(x1, y1))
+                frame_btn[heigth], height=1, width=2, bg="white", relief="groove", command=lambda x1=width, y1=heigth: color_change(x1, y1))
             btn[heigth][width].pack(side=LEFT)
 
+
 def reload_button_pattern():
-    global btn_value
-    global btn
-    global frame_btn
-    global my_pattern_lbl
+    global btn_value, btn, frame_btn, my_pattern_lbl
     actual_w = (len(btn[0]))
     actual_y = (len(btn))
     for heigth in range(actual_y):
@@ -216,36 +217,101 @@ def reload_button_pattern():
     my_pattern_lbl.set("My pattern {}x{}".format(my_pattern_w, my_pattern_h))
     make_button_pattern()  # redraw
 
+
 make_button_pattern()  # draw first time
 
-computebutton = tk.Button(windowLeftBottom, text="COMPUTE", padx=10)
+computebutton = tk.Button(windowLeftBottom, text="COMPUTE", padx=10,
+                          command=lambda: compute_score())
 computebutton.pack(side=LEFT, padx=10)
+
 randomize = tk.Button(windowLeftBottom, text="RANDOMIZE", padx=10,
-                        command=lambda: reload_canvas())
+                      command=lambda: randomize_canvas())
 randomize.pack(side=LEFT, padx=10)
 framebutton = tk.Button(windowLeftBottom, text="SETTINGS",
                         command=lambda: frame(), padx=10)
 framebutton.pack(side=LEFT, padx=10)
 
+svN = tk.StringVar()
+tk.Button(windowLeft, textvariable=svN, fg="red", command=lambda: show_score("N")).place(
+    in_=windowLeft, anchor="c", relx=.35, rely=0.96)
+svS = tk.StringVar()
+tk.Button(windowLeft, textvariable=svS, fg="green", command=lambda: show_score("S")).place(
+    in_=windowLeft, anchor="c", relx=.45, rely=0.96)
+svW = tk.StringVar()
+tk.Button(windowLeft, textvariable=svW, fg="purple", command=lambda: show_score("W")).place(
+    in_=windowLeft, anchor="c", relx=.55, rely=0.96)
+svE = tk.StringVar()
+tk.Button(windowLeft, textvariable=svE, fg="blue",command=lambda: show_score("E")).place(
+    in_=windowLeft, anchor="c", relx=.65, rely=0.96)
+
+
 # frameRight
-canvas = tk.Canvas(windowRight, width=w/2, height=h)
 
 
-def make_canvas():
-    global canvas
-    global canvas_h
-    global canvas_w
+canvas = tk.Canvas(windowRight, width=w/2, height=h, bg="red")
+
+canvas_rect, width_rect, height_rect = None, None, None
+
+
+def randomize_canvas():
+    global canvas_rect
+    canvas_rect = random_matrix(canvas_w, canvas_h)
+    render_canvas()
+
+
+last_score = None
+
+
+def render_canvas():
+    global canvas, canvas_h, canvas_w, last_score, width_rect, height_rect
+    last_score = None
     all_width = w/2
     all_height = h
-    canvas.create_rectangle(0, 0, all_width, all_height, fill="blue")
+    width_rect = all_width/canvas_w
+    height_rect = all_height/canvas_h
+    for h_c in range(0, canvas_h):
+        for w_c in range(0, canvas_w):
+            if(canvas_rect[h_c][w_c] == 0):
+                canvas.create_rectangle(
+                    w_c*width_rect, h_c*height_rect, (1+w_c)*width_rect, (1+h_c)*height_rect, fill="white")
+            else:
+                canvas.create_rectangle(
+                    w_c*width_rect, h_c*height_rect, (1+w_c)*width_rect, (1+h_c)*height_rect, fill="black")
     canvas.pack()
+
+
+randomize_canvas()
+
+
+def compute_score():
+    global svN, svE, svS, svW
+    global last_score
+
+    last_score = compare_all_slice(btn_value, canvas_rect)
+    svN.set("N: {}".format(len(last_score["N"])))
+    svS.set("S: {}".format(len(last_score["S"])))
+    svW.set("W: {}".format(len(last_score["W"])))
+    svE.set("E: {}".format(len(last_score["E"])))
+
+
+def show_score(cd):
+    colors_directions = {"N": "red", "S": "green", "W": "purple", "E": "blue"}
+    if last_score != None:
+        for elem in last_score[cd]:
+            startX, startY = elem["x"], elem["y"]
+            endX = (elem["x"] + my_pattern_w) if cd == "N" or cd == "S" else (elem["x"] + my_pattern_h)
+            endY = (elem["y"] + my_pattern_h) if cd == "N" or cd == "S" else (elem["y"] + my_pattern_w)
+            for cubeY in range(startY, endY):
+                for cubeX in range(startX, endX):
+                    col = "yellow" if  canvas_rect[cubeY][cubeX] == 0 else colors_directions[cd]
+                    spot = canvas.create_rectangle(
+                        cubeX*width_rect, cubeY*height_rect, (1+cubeX)*width_rect, (1+cubeY)*height_rect, fill=col)
+                    window.after(2000, canvas.delete, (spot))
+
+                
+    
     pass
 
-def reload_canvas():
-    global canvas
-    canvas.delete("all")
-    make_canvas()
 
-make_canvas()
 if __name__ == "__main__":
     window.mainloop()
