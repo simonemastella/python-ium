@@ -28,20 +28,26 @@ canvas_h = 10
 
 
 # define the setting frame
-def frame():
+def settingsFrame():
     newWindow = tk.Toplevel(window)
     newWindow.grab_set()  # no release?
     newWindow.title("Settings")
     # dimension and position
     newWindow.geometry('%dx%d+%d+%d' % (w/2, h/2, x+x/2, y+y/2))
     # layout
-
     frameLeftCanvasW = tk.Frame(newWindow)
     frameLeftCanvasH = tk.Frame(newWindow)
     frameLeftPatternW = tk.Frame(newWindow)
     frameLeftPatternH = tk.Frame(newWindow)
     frameLeftBottomError = tk.Frame(newWindow)
     frameLeftBottomButton = tk.Frame(newWindow)
+    #buttons
+    save_button = tk.Button(
+        frameLeftBottomButton, text="SAVE", command=lambda: save_changes(), padx=20)
+    reset_button = tk.Button(
+        frameLeftBottomButton, text="RESET", command=lambda: reset_changes(), padx=20)
+    save_button.pack(side=LEFT, padx=20)
+    reset_button.pack(side=RIGHT, padx=20)
     # layout left side
     frameLeftCanvasW.place(in_=newWindow, anchor="c", relx=.5, rely=.2)
     frameLeftCanvasH.place(in_=newWindow, anchor="c", relx=.5, rely=.3)
@@ -58,12 +64,14 @@ def frame():
     lbl_err = tk.Label(frameLeftBottomError,
                        text="Warning: only numerical value will be saved")
     # live changing textbox for error warning
-
     def callback(sv):
         if (not str(sv.get()).isdigit()):
             lbl_err.pack(expand=TRUE)
+            save_button["state"] = "disabled"
         else:
             lbl_err.pack_forget()
+            save_button["state"] = "normal"
+
     # 4 entry
     sv1 = tk.StringVar()
     sv1.trace("w", lambda name, index, mode, sv=sv1: callback(sv))
@@ -86,12 +94,7 @@ def frame():
     e2.pack(side=RIGHT)
     e3.pack(side=RIGHT)
     e4.pack(side=RIGHT)
-    save_button = tk.Button(
-        frameLeftBottomButton, text="SAVE", command=lambda: save_changes(), padx=20)
-    reset_button = tk.Button(
-        frameLeftBottomButton, text="RESET", command=lambda: reset_changes(), padx=20)
-    save_button.pack(side=LEFT, padx=20)
-    reset_button.pack(side=RIGHT, padx=20)
+    
 
     # check and function for saving or quitting
     def has_changes():
@@ -228,7 +231,7 @@ randomize = tk.Button(windowLeftBottom, text="RANDOMIZE", padx=10,
                       command=lambda: randomize_canvas())
 randomize.pack(side=LEFT, padx=10)
 framebutton = tk.Button(windowLeftBottom, text="SETTINGS",
-                        command=lambda: frame(), padx=10)
+                        command=lambda: settingsFrame(), padx=10)
 framebutton.pack(side=LEFT, padx=10)
 
 svN = tk.StringVar()
@@ -306,10 +309,7 @@ def show_score(cd):
                     col = "yellow" if  canvas_rect[cubeY][cubeX] == 0 else colors_directions[cd]
                     spot = canvas.create_rectangle(
                         cubeX*width_rect, cubeY*height_rect, (1+cubeX)*width_rect, (1+cubeY)*height_rect, fill=col)
-                    window.after(2000, canvas.delete, (spot))
-
-                
-    
+                    window.after(2000, canvas.delete, (spot)) 
     pass
 
 
