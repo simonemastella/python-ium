@@ -138,7 +138,7 @@ def settingsFrame():
                     my_pattern_h = int(e4.get())
             reset_changes()
             reload_button_pattern()
-            randomize_canvas()
+            randomize_canvas()  # TODO only if e1 or e2? ora cambia per tutto
 
     def reset_changes():
         if has_changes():
@@ -200,6 +200,9 @@ def make_button_pattern():
         elif btn_value[a][b] == 1:
             btn[a][b].config(bg="white")
             btn_value[a][b] = 0
+        compute_score()
+
+
     for heigth in range(my_pattern_h):
         frame_btn[heigth] = tk.Frame(windowLeftMid)
         frame_btn[heigth].pack(side=TOP)
@@ -223,9 +226,9 @@ def reload_button_pattern():
 
 make_button_pattern()  # draw first time
 
-computebutton = tk.Button(windowLeftBottom, text="COMPUTE", padx=10,
-                          command=lambda: compute_score())
-computebutton.pack(side=LEFT, padx=10)
+#computebutton = tk.Button(windowLeftBottom, text="COMPUTE", padx=10,   TEST
+#                          command=lambda: compute_score())             TEST
+#computebutton.pack(side=LEFT, padx=10)                                 TEST
 
 randomize = tk.Button(windowLeftBottom, text="RANDOMIZE", padx=10,
                       command=lambda: randomize_canvas())
@@ -255,11 +258,24 @@ canvas = tk.Canvas(windowRight, width=w/2, height=h, bg="red")
 
 canvas_rect, width_rect, height_rect = None, None, None
 
+def compute_score():
+    global svN, svE, svS, svW
+    global last_score
+
+    last_score = compare_all_slice(btn_value, canvas_rect)
+    svN.set("N: {}".format(len(last_score["N"])))
+    svS.set("S: {}".format(len(last_score["S"])))
+    svW.set("W: {}".format(len(last_score["W"])))
+    svE.set("E: {}".format(len(last_score["E"])))
+
+
 
 def randomize_canvas():
     global canvas_rect
     canvas_rect = random_matrix(canvas_w, canvas_h)
     render_canvas()
+    compute_score()
+
 
 
 last_score = None
@@ -286,15 +302,6 @@ def render_canvas():
 randomize_canvas()
 
 
-def compute_score():
-    global svN, svE, svS, svW
-    global last_score
-
-    last_score = compare_all_slice(btn_value, canvas_rect)
-    svN.set("N: {}".format(len(last_score["N"])))
-    svS.set("S: {}".format(len(last_score["S"])))
-    svW.set("W: {}".format(len(last_score["W"])))
-    svE.set("E: {}".format(len(last_score["E"])))
 
 
 def show_score(cd):
