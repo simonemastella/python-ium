@@ -254,7 +254,7 @@ tk.Button(windowLeft, textvariable=svE, fg="blue",command=lambda: show_score("E"
 # frameRight
 
 
-canvas = tk.Canvas(windowRight, width=w/2, height=h, bg="red")
+canvas = tk.Canvas(windowRight, width=w/2, height=h, bg="white")
 
 canvas_rect, width_rect, height_rect = None, None, None
 
